@@ -2,6 +2,13 @@ const app = require('../src/app'); // Import the Express application
 const request = require('supertest'); // Import Supertest for HTTP assertions
 
 describe("Chapter 3: API Tests", () => {
+  it('should return the landing page with status 200', async () => {
+    const response = await request(app).get('/');
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('<h1>Cookbook App</h1>');
+    expect(response.text).toContain('<h2>Discover and Share Amazing Recipes</h2>');
+  });
+
   it("it should return an array of recipes", async () => {
     const res = await request(app).get("/api/recipes");
     expect(res.statusCode).toEqual(200);
@@ -13,24 +20,15 @@ describe("Chapter 3: API Tests", () => {
       expect(recipe).toHaveProperty("ingredients");
     });
   });
+
 });
 
-describe('GET /', () => {
-  it('should return the landing page with status 200', async () => {
-    const response = await request(app).get('/');
-    expect(response.status).toBe(200);
-    expect(response.text).toContain('<h1>Cookbook App</h1>');
-    expect(response.text).toContain('<h2>Discover and Share Amazing Recipes</h2>');
-  });
-});
-
-/*
-describe('POST /api/recipes', () => {
+describe('Chapter 4: API Tests', () => {
   it('should create a new recipe and return it with status 201', async () => {
     const newRecipe = {
-      title: 'Test Recipe',
-      ingredients: ['Ingredient 1', 'Ingredient 2'],
-      instructions: 'Test instructions'
+      id: 99,
+      name: 'Grilled Cheese',
+      ingredients: ['bread', 'cheese', 'butter']
     };
 
     const response = await request(app)
@@ -38,21 +36,16 @@ describe('POST /api/recipes', () => {
       .send(newRecipe);
 
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('title', 'Test Recipe');
-    expect(response.body).toHaveProperty('ingredients');
-    expect(response.body).toHaveProperty('instructions', 'Test instructions');
+    expect(response.body).toHaveProperty('id', 99);
   });
-});
 
-describe('GET /api/recipes/:id', () => {
-  it('should return a specific recipe by ID with status 200', async () => {
+  it('should return a specific recipe by ID with status 201', async () => {
     const newRecipe = {
-      title: 'Test Recipe for GET',
-      ingredients: ['Ingredient A', 'Ingredient B'],
-      instructions: 'Test instructions for GET'
+      id: 99,
+      name: 'Grilled Cheese',
+      ingredients: ['bread', 'cheese', 'butter']
     };
 
-    // First, create a new recipe to get its ID
     const postResponse = await request(app)
       .post('/api/recipes')
       .send(newRecipe);
@@ -62,16 +55,30 @@ describe('GET /api/recipes/:id', () => {
     const getResponse = await request(app).get(`/api/recipes/${recipeId}`);
     expect(getResponse.status).toBe(200);
     expect(getResponse.body).toHaveProperty('id', recipeId);
-    expect(getResponse.body).toHaveProperty('title', 'Test Recipe for GET');
+    expect(getResponse.body).toHaveProperty('name', 'Grilled Cheese');
   });
+
+  it("should return a 400 status code when adding a new recipe with missing name", async () => {
+    const res = await request(app).post("/api/recipes").send({
+      id: 100,
+      ingredients: ["bread", "cheese", "butter"]
+    });
+  });
+
+  it("should return a 204 status code when deleting a recipe", async () => {
+    const res = await request(app).delete("/api/recipes/99");
+    expect(res.statusCode).toEqual(204);
+  });
+
 });
 
+/*
 describe('PUT /api/recipes/:id', () => {
-  it('should update a specific recipe by ID and return it with status 200', async () => {
+  it('should update a specific recipe by ID and return it with status 201', async () => {
     const newRecipe = {
-      title: 'Test Recipe for PUT',
-      ingredients: ['Ingredient X', 'Ingredient Y'],
-      instructions: 'Test instructions for PUT'
+      name: 'Grilled Cheese',
+      ingredients: ['bread', 'cheese', 'butter'],
+      instructions: '1. Butter the bread.\n2. Place cheese between slices.\n3. Grill until golden brown.'
     };
 
     const postResponse = await request(app)
@@ -81,38 +88,39 @@ describe('PUT /api/recipes/:id', () => {
     const recipeId = postResponse.body.id;
 
     const updatedRecipe = {
-      title: 'Updated Test Recipe for PUT',
-      ingredients: ['Updated Ingredient X', 'Updated Ingredient Y'],
-      instructions: 'Updated test instructions for PUT'
+      name: 'Updated Grilled Cheese',
+      ingredients: ['Updated bread', 'Updated cheese', 'Updated butter'],
+      instructions: '1. Butter the updated bread.\n2. Place updated cheese between slices.\n3. Grill until updated golden brown.'
     };
 
     const putResponse = await request(app)
       .put(`/api/recipes/${recipeId}`)
       .send(updatedRecipe);
 
-    expect(putResponse.status).toBe(200);
+    expect(putResponse.status).toBe(201);
     expect(putResponse.body).toHave
     Property('id', recipeId);
-    expect(putResponse.body).toHaveProperty('title', 'Updated Test Recipe for PUT');
+    expect(putResponse.body).toHaveProperty('name', 'Updated Grilled Cheese');
   });
 });
 
 describe('DELETE /api/recipes/:id', () => {
-  it('should delete a specific recipe by ID and return status 200', async () => {
+  it('should delete a specific recipe by ID and return status 201', async () => {
     const newRecipe = {
-      title: 'Test Recipe for DELETE',
-      ingredients: ['Ingredient M', 'Ingredient N'],
-      instructions: 'Test instructions for DELETE'
+      name: 'Grilled Cheese',
+      ingredients: ['bread', 'cheese', 'butter'],
+      instructions: '1. Butter the bread.\n2. Place cheese between slices.\n3. Grill until golden brown.'
     };
 
     const postResponse = await request(app)
-      .post('/recipes')
+      .post('/api/recipes')
       .send(newRecipe);
 
     const recipeId = postResponse.body.id;
 
     const deleteResponse = await request(app).delete(`/api/recipes/${recipeId}`);
-    expect(deleteResponse.status).toBe(200);
+    expect(deleteResponse.status).toBe(201);
   });
 });
-*/
+  */
+

@@ -7,6 +7,7 @@ Description: This file contains the main application logic for
 the Cookbook recipies app.
 
 */
+
 const express = require("express");
 var path = require('path');
 const bcrypt = require("bcryptjs");
@@ -69,6 +70,26 @@ app.get("/", async (req, res, next) => {
   res.send(html); // Sends the HTML content to the client
 });
 
+app.get("/api/recipes/:id", async (req, res, next) => {
+  try {
+    const recipeId = parseInt(req.params.id);
+
+    if (isNaN(recipeId)) {
+      return next(createError(400, "Input must be a number"));
+    }
+
+    const recipe = await recipes.findOne({ id: recipeId });
+
+    if (!recipe) {
+      return next(createError(404, "Recipe not found"));
+    }
+
+    res.status(200).json(recipe);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get("/api/recipes", async (req, res, next) => {
   try {
     const allRecipes = await recipes.find();
@@ -77,6 +98,40 @@ app.get("/api/recipes", async (req, res, next) => {
   } catch (err) {
     console.error("Error: ", err.message); // Logs error message
     next(err); // Passes error to the next middleware
+  }
+});
+
+app.post("/api/recipes", async (req, res, next) => {
+  try {
+    const newRecipe = req.body;
+    const expectedKeys = ["id", "name", "ingredients"];
+    const receivedKeys = Object.keys(newRecipe);
+    if (!receivedKeys.every(key => expectedKeys.includes(key)) ||
+      receivedKeys.length !== expectedKeys.length) {
+      console.error("Bad Request: Missing keys or extra keys", receivedKeys);
+      return next(createError(400, "Bad Request"));
+    }
+    const result = await recipes.insertOne(newRecipe);
+    console.log("Result: ", result);
+    res.status(201).send({ id: result.ops[0].id });
+  } catch (err) {
+    console.error("Error: ", err.message);
+    next(err);
+  }
+});
+
+app.delete("/api/recipes/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await recipes.deleteOne({ id: parseInt(id) });
+    console.log("Result: ", result);
+    res.status(204).send();
+  } catch (err) {
+    if (err.message === "No matching item found") {
+      return next(createError(404, "Recipe not found"));
+    }
+    console.error("Error: ", err.message);
+    next(err);
   }
 });
 

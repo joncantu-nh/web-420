@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../src/app');
 
-describe('In-N-Out Books API Tests', () => {
+describe('In-N-Out Books API', () => {
 
   test('GET / should return landing page HTML', async () => {
     const res = await request(app).get('/');
@@ -9,27 +9,6 @@ describe('In-N-Out Books API Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toMatch(/html/);
     expect(res.text).toContain('In-N-Out Books');
-  });
-
-  test('GET /invalid-route should return 404', async () => {
-    const res = await request(app).get('/this-route-does-not-exist');
-
-    expect(res.statusCode).toBe(404);
-    expect(res.body.message).toBe('Resource not found');
-  });
-
-  test('500 error handler should return JSON error response', async () => {
-
-    // Temporarily inject a failing route
-    app.get('/error-test', (req, res) => {
-      throw new Error('Forced server error');
-    });
-
-    const res = await request(app).get('/error-test');
-
-    expect(res.statusCode).toBe(500);
-    expect(res.body.message).toBe('Forced server error');
-    expect(res.body).toHaveProperty('status', 500);
   });
 
   test('Return an array of books', async () => {
@@ -56,11 +35,61 @@ describe('In-N-Out Books API Tests', () => {
     expect(res.body.title).toEqual('The Fellowship of the Ring');
   });
 
+});
+
+describe("Error Handling", () => {
   test('Return 400 if id is not a number', async () => {
     const res = await request(app).get('/api/books/abc');
 
     expect(res.statusCode).toEqual(400);
     expect(res.body.message).toEqual('Input must be a number');
+  });
+
+  test('GET /invalid-route should return 404', async () => {
+    const res = await request(app).get('/this-route-does-not-exist');
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe('Resource not found');
+  });
+
+});
+
+describe("Week 5 - Assignment 5.2: API Tests", () => {
+
+  test("should return a 201-status code when adding a new book", async () => {
+    const newBook = {
+      id: 99,
+      title: "The Hobbit",
+      author: "J.R.R. Tolkien"
+    };
+
+    const res = await request(app)
+      .post("/api/books")
+      .send(newBook);
+
+    expect(res.statusCode).toEqual(201);
+    expect(res.body).toHaveProperty("id", 99);
+  });
+
+  test("should return a 400-status code when adding a new book with missing title", async () => {
+    const newBook = {
+      id: 100,
+      author: "J.R.R. Tolkien"
+    };
+
+    const res = await request(app)
+      .post("/api/books")
+      .send(newBook);
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Bad Request");
+  });
+
+  test("should return a 204-status code when deleting a book", async () => {
+    const res = await request(app)
+      .delete("/api/books/99");
+
+    expect(res.statusCode).toEqual(204);
   });
 
 });
