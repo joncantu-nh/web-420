@@ -93,3 +93,33 @@ describe("Week 5 - Assignment 5.2: API Tests", () => {
   });
 
 });
+
+describe("Chapter 5 - API Tests (PUT): Week 6 - Assignment 6.2", () => {
+  it("should return a 204 status code when updating a book", async () => {
+    const res = await request(app)
+      .put("/api/books/1")
+      .send({
+        title: "The Hobbit",
+        author: "J.R.R. Tolkien"
+      });
+
+    expect(res.statusCode).toEqual(204);
+  });
+
+  it("should return a 400 status code when updating a book with a non-numeric id", async () => {
+    const res = await request(app).put("/api/books/foo").send({
+      title: "Test Book",
+      author: "Test Author"
+    });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Input must be a number");
+  });
+
+  it("should return a 400 status code when updating a book with a missing title", async () => {
+    const res = await request(app).put("/api/books/1").send({
+      author: "Test Author"
+    });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Bad Request");
+  });
+});

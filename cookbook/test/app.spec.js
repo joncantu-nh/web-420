@@ -58,69 +58,74 @@ describe('Chapter 4: API Tests', () => {
     expect(getResponse.body).toHaveProperty('name', 'Grilled Cheese');
   });
 
-  it("should return a 400 status code when adding a new recipe with missing name", async () => {
-    const res = await request(app).post("/api/recipes").send({
-      id: 100,
-      ingredients: ["bread", "cheese", "butter"]
-    });
+  it("should return a 400 status code when adding a recipe with missing name", async () => {
+    const res = await request(app)
+      .post("/api/recipes")
+      .send({
+        id: 100,
+        ingredients: ["bread", "cheese", "butter"]
+      });
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Bad Request");
   });
 
-  it("should return a 204 status code when deleting a recipe", async () => {
-    const res = await request(app).delete("/api/recipes/99");
+});
+
+describe("Chapter 5: Test for PUT", () => {
+  it("should return a 204 status code when updating a recipe", async () => {
+    const res = await request(app)
+      .put("/api/recipes/1")
+      .send({
+        name: "Pancakes",
+        ingredients: ["flour", "milk", "eggs", "sugar"]
+      });
+
     expect(res.statusCode).toEqual(204);
   });
 
-});
+  it("should return a 400 status code when updating a recipe with a non-numeric id", async () => {
+    const res = await request(app).put("/api/recipes/foo").send({
+      name: "Test Recipe",
+      ingredients: ["test", "test"]
+    });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Input must be a number");
+  });
 
-/*
-describe('PUT /api/recipes/:id', () => {
-  it('should update a specific recipe by ID and return it with status 201', async () => {
-    const newRecipe = {
-      name: 'Grilled Cheese',
-      ingredients: ['bread', 'cheese', 'butter'],
-      instructions: '1. Butter the bread.\n2. Place cheese between slices.\n3. Grill until golden brown.'
-    };
-
-    const postResponse = await request(app)
-      .post('/api/recipes')
-      .send(newRecipe);
-
-    const recipeId = postResponse.body.id;
-
-    const updatedRecipe = {
-      name: 'Updated Grilled Cheese',
-      ingredients: ['Updated bread', 'Updated cheese', 'Updated butter'],
-      instructions: '1. Butter the updated bread.\n2. Place updated cheese between slices.\n3. Grill until updated golden brown.'
-    };
-
-    const putResponse = await request(app)
-      .put(`/api/recipes/${recipeId}`)
-      .send(updatedRecipe);
-
-    expect(putResponse.status).toBe(201);
-    expect(putResponse.body).toHave
-    Property('id', recipeId);
-    expect(putResponse.body).toHaveProperty('name', 'Updated Grilled Cheese');
+  it("should return a 400 status code when updating a recipe with missing keys or extra keys", async () => {
+    const res = await request(app).put("/api/recipes/1").send({
+      name: "Test Recipe"
+    });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.message).toEqual("Bad Request");
+    const res2 = await request(app).put("/api/recipes/1").send({
+      name: "Test Recipe",
+      ingredients: ["test", "test"],
+      extraKey: "extra"
+    });
+    expect(res2.statusCode).toEqual(400);
+    expect(res2.body.message).toEqual("Bad Request");
   });
 });
 
-describe('DELETE /api/recipes/:id', () => {
-  it('should delete a specific recipe by ID and return status 201', async () => {
+describe("DELETE /api/recipes/:id", () => {
+  it("should delete a specific recipe and return 204", async () => {
     const newRecipe = {
-      name: 'Grilled Cheese',
-      ingredients: ['bread', 'cheese', 'butter'],
-      instructions: '1. Butter the bread.\n2. Place cheese between slices.\n3. Grill until golden brown.'
+      id: 101,
+      name: "Grilled Cheese",
+      ingredients: ["bread", "cheese", "butter"]
     };
 
     const postResponse = await request(app)
-      .post('/api/recipes')
+      .post("/api/recipes")
       .send(newRecipe);
 
-    const recipeId = postResponse.body.id;
+    expect(postResponse.statusCode).toEqual(201);
 
-    const deleteResponse = await request(app).delete(`/api/recipes/${recipeId}`);
-    expect(deleteResponse.status).toBe(201);
+    const deleteResponse = await request(app)
+      .delete(`/api/recipes/${postResponse.body.id}`);
+
+    expect(deleteResponse.statusCode).toEqual(204);
   });
 });
-  */
-
