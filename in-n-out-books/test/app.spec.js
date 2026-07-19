@@ -122,4 +122,63 @@ describe("Chapter 5 - API Tests (PUT): Week 6 - Assignment 6.2", () => {
     expect(res.statusCode).toEqual(400);
     expect(res.body.message).toEqual("Bad Request");
   });
+
+  describe("Chapter 6 - Implementing User Authentication): Week 6 - Assignment 6.1", () => {
+    const testUser = {
+      email: "cedric@hogwarts.edu",
+      password: "diggory"
+    };
+
+    beforeAll(async () => {
+      await request(app)
+        .post("/api/auth/register")
+        .send(testUser);
+    });
+
+    test("should log a user in and return a 200 status with an Authentication successful message", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: testUser.email,
+          password: testUser.password
+        });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.message).toEqual("Authentication successful");
+    });
+
+    test("should return a 401 status with an Unauthorized message when credentials are incorrect", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: testUser.email,
+          password: "wrong-password"
+        });
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.message).toEqual("Unauthorized");
+    });
+
+    test("should return a 400 status when the email is missing", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          password: testUser.password
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.message).toEqual("Email is required");
+    });
+
+    test("should return a 400 status when the password is missing", async () => {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({
+          email: testUser.email
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.message).toEqual("Password is required");
+    });
+  });
 });

@@ -109,6 +109,17 @@ describe("Chapter 5: Test for PUT", () => {
   });
 });
 
+describe("Chapter 6: Test for Authorization and Authentication", () => {
+  it("should return a 200 status code with a message of 'Registration successful' when registering a new user", async () => {
+    const res = await request(app).post("/api/register").send({
+      email: "cedric@hogwarts.edu",
+      password: "diggory"
+    });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toEqual("Registration successful");
+  });
+});
+
 describe("DELETE /api/recipes/:id", () => {
   it("should delete a specific recipe and return 204", async () => {
     const newRecipe = {
