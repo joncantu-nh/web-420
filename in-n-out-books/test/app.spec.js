@@ -182,3 +182,101 @@ describe("Chapter 5 - API Tests (PUT): Week 6 - Assignment 6.2", () => {
     });
   });
 });
+
+describe("Chapter 7 - Implementing Security Questions: Week 7 - Assignment 7.1", () => {
+  const endpoint =
+    "/api/users/harry@hogwarts.edu/" +
+    "verify-security-question";
+
+  const correctAnswers = [
+    { answer: "Hedwig" },
+    { answer: "Quidditch Through the Ages" },
+    { answer: "Evans" }
+  ];
+
+  test(
+    "Return 200 status with a security questions successfully answered message",
+    async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .send(correctAnswers);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.message).toEqual(
+        "Security questions successfully answered"
+      );
+    }
+  );
+
+  test(
+    "Return 400 status with a Bad Request message when validation fails",
+    async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .send([
+          { answer: "Hedwig" },
+          {
+            answer: "Quidditch Through the Ages",
+            extraProperty: "not allowed"
+          },
+          { answer: "Evans" }
+        ]);
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.message).toEqual(
+        "Bad Request"
+      );
+    }
+  );
+
+  test("Return 401 status with an Unauthorized message when answers are incorrect",
+    async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .send([
+          { answer: "Wrong answer" },
+          { answer: "Wrong answer" },
+          { answer: "Wrong answer" }
+        ]);
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.message).toEqual(
+        "Unauthorized"
+      );
+    }
+  );
+
+  test(
+    "Return 401 when user does not exist",
+    async () => {
+      const res = await request(app)
+        .post(
+          "/api/users/unknown@example.com/" +
+          "verify-security-question"
+        )
+        .send(correctAnswers);
+
+      expect(res.statusCode).toEqual(401);
+      expect(res.body.message).toEqual(
+        "Unauthorized"
+      );
+    }
+  );
+
+  test(
+    "Return 400 when fewer than three answers are supplied",
+    async () => {
+      const res = await request(app)
+        .post(endpoint)
+        .send([
+          { answer: "Hedwig" },
+          { answer: "Evans" }
+        ]);
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.message).toEqual(
+        "Bad Request"
+      );
+    }
+  );
+});
